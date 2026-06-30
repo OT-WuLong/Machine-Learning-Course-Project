@@ -1,0 +1,46 @@
+# ============================================================
+# 需要提交到 Git 的核心文件：
+#   - 源代码: *.py, requirements.txt, .gitignore
+#   - 原始数据: 分数数据集.xlsx (流水线源头，不可缺失)
+#   - 文档: 项目说明.md, 代码审查报告.md
+#
+# 以下均为可自动重新生成的产物，通过运行流水线恢复：
+#   python data_preprocess.py  → cleaned_data.csv, selected_features.txt
+#   python train_models.py     → *.pkl, *.png, progressive_results.csv, feature_config.json
+#   streamlit run app.py       → 启动 Web 服务
+# ============================================================
+
+# 模型文件（太大，从 train_models.py 重新生成）
+*.pkl
+
+# NumPy 二进制（旧版中间产物，已不再生成）
+*.npy
+
+# 图片文件（从 train_models.py 重新生成）
+*.png
+
+# 预处理中间产物（从 data_preprocess.py 重新生成）
+cleaned_data.csv
+selected_features.txt
+
+# 训练中间产物（从 train_models.py 重新生成）
+progressive_results.csv
+feature_config.json
+
+# Python 缓存
+__pycache__/
+*.py[cod]
+*.pyo
+
+# 虚拟环境
+venv/
+env/
+.venv/
+
+# IDE 配置
+.vscode/
+.idea/
+
+# 系统文件
+.DS_Store
+Thumbs.db
