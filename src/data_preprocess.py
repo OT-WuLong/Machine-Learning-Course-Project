@@ -21,10 +21,12 @@ import warnings
 warnings.filterwarnings('ignore', category=FutureWarning)
 
 # ================================================================
-# 路径配置：使用相对路径（相对于脚本所在目录）
+# 路径配置：使用相对路径（项目根目录）
 # ================================================================
-BASE_DIR = os.path.dirname(os.path.abspath(__file__))
-FILE_PATH = os.path.join(BASE_DIR, '分数数据集.xlsx')
+BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+DATA_DIR = os.path.join(BASE_DIR, 'data')
+OUTPUTS_DIR = os.path.join(BASE_DIR, 'outputs')
+FILE_PATH = os.path.join(DATA_DIR, '分数数据集.xlsx')
 
 # ================================================================
 # 第1步：读取所有 7 个表单并合并

@@ -25,8 +25,20 @@ import joblib
 import matplotlib.pyplot as plt
 import seaborn as sns
 import warnings
-from utils import score_to_grade
+import sys
+
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+from src.utils import score_to_grade
 warnings.filterwarnings('ignore', category=FutureWarning)
+
+# ================================================================
+# 路径配置
+# ================================================================
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+DATA_DIR = os.path.join(BASE_DIR, 'data')
+MODELS_DIR = os.path.join(BASE_DIR, 'models')
+OUTPUTS_DIR = os.path.join(BASE_DIR, 'outputs')
+FIGURES_DIR = os.path.join(BASE_DIR, 'reports', 'figures')
 
 # ================================================================
 # 页面基础配置
@@ -50,8 +62,6 @@ st.markdown("""
 plt.rcParams['font.sans-serif'] = ['SimHei', 'Microsoft YaHei', 'DejaVu Sans']
 plt.rcParams['axes.unicode_minus'] = False
 
-BASE_DIR = os.path.dirname(os.path.abspath(__file__))
-
 # ================================================================
 # 全局加载：模型、配置、数据
 # ================================================================
@@ -63,23 +73,23 @@ def load_models():
     """加载 4 组渐进式模型（2特征 ~ 5特征）"""
     models = {}
     for n in [2, 3, 4, 5]:
-        models[f'a_{n}'] = joblib.load(f'{BASE_DIR}/model_a_{n}feat.pkl')
-        models[f'b_{n}'] = joblib.load(f'{BASE_DIR}/model_b_{n}feat.pkl')
+        models[f'a_{n}'] = joblib.load(f'{MODELS_DIR}/model_a_{n}feat.pkl')
+        models[f'b_{n}'] = joblib.load(f'{MODELS_DIR}/model_b_{n}feat.pkl')
     return models
 
 @st.cache_data
 def load_config():
     """加载特征顺序和班级特征配置"""
-    with open(f'{BASE_DIR}/feature_config.json', 'r', encoding='utf-8') as f:
+    with open(f'{OUTPUTS_DIR}/feature_config.json', 'r', encoding='utf-8') as f:
         return json.load(f)
 
 @st.cache_data
 def load_data():
     """加载清洗后数据和渐进效果对比表"""
-    df = pd.read_csv(f'{BASE_DIR}/cleaned_data.csv')
-    results = pd.read_csv(f'{BASE_DIR}/progressive_results.csv')
+    df = pd.read_csv(f'{DATA_DIR}/cleaned_data.csv')
+    results = pd.read_csv(f'{DATA_DIR}/progressive_results.csv')
     # 计算各班级占比（用于「全部」选项的编码）
-    with open(f'{BASE_DIR}/feature_config.json', 'r', encoding='utf-8') as f:
+    with open(f'{OUTPUTS_DIR}/feature_config.json', 'r', encoding='utf-8') as f:
         cfg = json.load(f)
     class_feats = cfg['class_features']
     class_props = {}
@@ -508,7 +518,7 @@ def page_analysis():
     with tab2:
         st.subheader("渐进预测效果对比")
         try:
-            st.image(f'{BASE_DIR}/progressive_comparison.png', use_container_width=True)
+            st.image(f'{FIGURES_DIR}/progressive_comparison.png', use_container_width=True)
         except FileNotFoundError:
             st.error("渐进对比图未找到，请先运行 train_models.py")
         st.markdown("""
@@ -573,7 +583,7 @@ def page_visual():
         st.subheader("决策树分支规则图")
         try:
             # 由 train_models.py 生成的完整决策树图像
-            st.image(f'{BASE_DIR}/model_b_tree_structure.png', use_container_width=True)
+            st.image(f'{FIGURES_DIR}/model_b_tree_structure.png', use_container_width=True)
         except FileNotFoundError:
             st.error("决策树结构图未找到，请先运行 train_models.py")
         st.markdown("""
@@ -589,13 +599,13 @@ def page_visual():
         col1, col2 = st.columns(2)
         with col1:
             try:
-                st.image(f'{BASE_DIR}/model_a_evaluation.png', use_container_width=True)
+                st.image(f'{FIGURES_DIR}/model_a_evaluation.png', use_container_width=True)
             except FileNotFoundError:
                 st.error("评估图未找到，请先运行 train_models.py")
             st.markdown("**散点图**：散点越贴近对角线预测越准确；**残差图**：残差应在 0 附近随机分布")
         with col2:
             try:
-                st.image(f'{BASE_DIR}/model_a_coefficients.png', use_container_width=True)
+                st.image(f'{FIGURES_DIR}/model_a_coefficients.png', use_container_width=True)
             except FileNotFoundError:
                 st.error("系数图未找到，请先运行 train_models.py")
             st.markdown("**系数图**：绿色 = 正相关，红色 = 负相关，条越长影响越大")
@@ -615,13 +625,13 @@ def page_visual():
         col1, col2 = st.columns(2)
         with col1:
             try:
-                st.image(f'{BASE_DIR}/model_b_confusion_matrix.png', use_container_width=True)
+                st.image(f'{FIGURES_DIR}/model_b_confusion_matrix.png', use_container_width=True)
             except FileNotFoundError:
                 st.error("混淆矩阵图未找到，请先运行 train_models.py")
             st.markdown("**混淆矩阵**：对角线 = 正确预测，颜色越深数字越大")
         with col2:
             try:
-                st.image(f'{BASE_DIR}/model_b_feature_importance.png', use_container_width=True)
+                st.image(f'{FIGURES_DIR}/model_b_feature_importance.png', use_container_width=True)
             except FileNotFoundError:
                 st.error("特征重要性图未找到，请先运行 train_models.py")
             st.markdown("**特征重要性**：线下期末考（0.47）是最重要的分裂特征")

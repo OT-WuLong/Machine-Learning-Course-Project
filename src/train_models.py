@@ -31,7 +31,11 @@ matplotlib.rcParams['axes.unicode_minus'] = False
 
 warnings.filterwarnings('ignore')
 
-BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+DATA_DIR = os.path.join(BASE_DIR, 'data')
+MODELS_DIR = os.path.join(BASE_DIR, 'models')
+OUTPUTS_DIR = os.path.join(BASE_DIR, 'outputs')
+FIGURES_DIR = os.path.join(BASE_DIR, 'reports', 'figures')
 
 # ================================================================
 # 1. 加载预处理后的数据
@@ -44,8 +48,8 @@ print("=" * 60)
 print("[1] 加载预处理后的数据")
 print("=" * 60)
 
-df = pd.read_csv(f'{BASE_DIR}/cleaned_data.csv')
-with open(f'{BASE_DIR}/selected_features.txt', 'r', encoding='utf-8') as f:
+df = pd.read_csv(f'{DATA_DIR}/cleaned_data.csv')
+with open(f'{OUTPUTS_DIR}/selected_features.txt', 'r', encoding='utf-8') as f:
     all_feature_names = [line.strip() for line in f.readlines()]
 
 print(f"全部特征数: {len(all_feature_names)}")
@@ -107,7 +111,7 @@ for n_feat, info in FEATURE_SETS.items():
     print(f"  模型A - R2: {r2:.4f}, MAE: {mae:.4f}, RMSE: {rmse:.4f}")
     print(f"  系数: {pd.DataFrame({'特征': selected, '权重': np.round(model_a.coef_, 4)}).to_string(index=False)}")
 
-    joblib.dump(model_a, f'{BASE_DIR}/model_a_{n_feat}feat.pkl')
+    joblib.dump(model_a, f'{MODELS_DIR}/model_a_{n_feat}feat.pkl')
 
     # ---- 模型 B：决策树分类 ----
     # 将连续分数转为等级标签，训练分类器
@@ -132,7 +136,7 @@ for n_feat, info in FEATURE_SETS.items():
     print(f"  模型B - 准确率: {accuracy:.4f}, 最佳参数: {grid_search.best_params_}")
     print(f"  特征重要性:\n{pd.DataFrame({'特征': selected, '重要性': model_b.feature_importances_}).to_string(index=False)}")
 
-    joblib.dump(model_b, f'{BASE_DIR}/model_b_{n_feat}feat.pkl')
+    joblib.dump(model_b, f'{MODELS_DIR}/model_b_{n_feat}feat.pkl')
 
     # 记录本版本结果
     results_summary.append({
@@ -183,7 +187,7 @@ ax2.set_xlabel('残差（真实 - 预测）'); ax2.set_ylabel('频数')
 ax2.set_title('模型A：残差分布'); ax2.grid(True, alpha=0.3)
 
 plt.tight_layout()
-plt.savefig(f'{BASE_DIR}/model_a_evaluation.png', dpi=150, bbox_inches='tight')
+plt.savefig(f'{MODELS_DIR}/model_a_evaluation.png', dpi=150, bbox_inches='tight')
 plt.close()
 print("  model_a_evaluation.png [OK]")
 
@@ -201,7 +205,7 @@ for i, (feat, val) in enumerate(zip(coef_df['特征'], coef_df['系数'])):
     ax.text(val + (0.02 if val >= 0 else -0.02), i, f'{val:.3f}',
             va='center', ha='left' if val >= 0 else 'right', fontsize=9)
 plt.tight_layout()
-plt.savefig(f'{BASE_DIR}/model_a_coefficients.png', dpi=150, bbox_inches='tight')
+plt.savefig(f'{MODELS_DIR}/model_a_coefficients.png', dpi=150, bbox_inches='tight')
 plt.close()
 print("  model_a_coefficients.png [OK]")
 
@@ -216,7 +220,7 @@ sns.heatmap(cm, annot=True, fmt='d', cmap='Blues',
 ax.set_xlabel('预测等级'); ax.set_ylabel('真实等级')
 ax.set_title(f'模型B：混淆矩阵（准确率={accuracy:.4f}）')
 plt.tight_layout()
-plt.savefig(f'{BASE_DIR}/model_b_confusion_matrix.png', dpi=150, bbox_inches='tight')
+plt.savefig(f'{MODELS_DIR}/model_b_confusion_matrix.png', dpi=150, bbox_inches='tight')
 plt.close()
 print("  model_b_confusion_matrix.png [OK]")
 
@@ -228,7 +232,7 @@ plot_tree(model_b5, feature_names=sel5,
           filled=True, rounded=True, fontsize=8, ax=ax)
 ax.set_title('模型B：决策树结构')
 plt.tight_layout()
-plt.savefig(f'{BASE_DIR}/model_b_tree_structure.png', dpi=100, bbox_inches='tight')
+plt.savefig(f'{MODELS_DIR}/model_b_tree_structure.png', dpi=100, bbox_inches='tight')
 plt.close()
 print("  model_b_tree_structure.png [OK]")
 
@@ -242,7 +246,7 @@ ax.set_xlabel('特征重要性'); ax.set_title('模型B：决策树特征重要�
 for i, (feat, val) in enumerate(zip(imp_df['特征'], imp_df['重要性'])):
     ax.text(val + 0.005, i, f'{val:.4f}', va='center', fontsize=9)
 plt.tight_layout()
-plt.savefig(f'{BASE_DIR}/model_b_feature_importance.png', dpi=150, bbox_inches='tight')
+plt.savefig(f'{MODELS_DIR}/model_b_feature_importance.png', dpi=150, bbox_inches='tight')
 plt.close()
 print("  model_b_feature_importance.png [OK]")
 
@@ -258,7 +262,7 @@ print("=" * 60)
 
 summary_df = pd.DataFrame(results_summary)
 print(summary_df.to_string(index=False))
-summary_df.to_csv(f'{BASE_DIR}/progressive_results.csv', index=False, encoding='utf-8-sig')
+summary_df.to_csv(f'{DATA_DIR}/progressive_results.csv', index=False, encoding='utf-8-sig')
 
 # 绘制双轴折线图：左轴 R² + 准确率，右轴 MAE
 fig, axes = plt.subplots(1, 2, figsize=(14, 5))
@@ -295,7 +299,7 @@ for i, v in enumerate(mae_values):
                  xytext=(0, 10), ha='center', fontsize=9, color='#e74c3c')
 
 plt.tight_layout()
-plt.savefig(f'{BASE_DIR}/progressive_comparison.png', dpi=150, bbox_inches='tight')
+plt.savefig(f'{FIGURES_DIR}/progressive_comparison.png', dpi=150, bbox_inches='tight')
 plt.close()
 print("\n渐进对比图已保存: progressive_comparison.png")
 
@@ -304,7 +308,7 @@ feature_config = {
     'feature_order': FEATURE_ORDER,
     'class_features': CLASS_FEATURES,
 }
-with open(f'{BASE_DIR}/feature_config.json', 'w', encoding='utf-8') as f:
+with open(f'{OUTPUTS_DIR}/feature_config.json', 'w', encoding='utf-8') as f:
     json.dump(feature_config, f, ensure_ascii=False, indent=2)
 print("特征配置已保存: feature_config.json")
 
